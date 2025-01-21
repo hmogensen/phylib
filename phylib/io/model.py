@@ -361,44 +361,6 @@ class TemplateModel(object):
         self.spike_templates = self._load_spike_templates()
         assert self.spike_templates.shape == (ns,)
         
-        # Trigger times
-        trigger_samples, trigger_times = self._load_trigger_samples()
-        n_triggers, = trigger_times.shape
-        assert trigger_samples.shape == (n_triggers,)
-        assert all(trigger_samples >= 0)
-        assert all(trigger_times >= 0)
-
-        trigger_indx = self._load_trigger_indx() 
-        if trigger_indx is None:
-            trigger_indx = np.array([int(i) for i in range(n_triggers)])
-        assert trigger_indx.shape == (n_triggers,)
-        assert all(trigger_indx >= 0)
-        
-        trigger_names = self._load_trigger_names()
-        if trigger_names is None:
-            trigger_names = np.array([str(i) for i in np.unique(trigger_indx)])
-        if len(trigger_times) == 0:
-            assert len(trigger_names) == len(trigger_indx) == 0
-        else:
-            assert len(trigger_names) >= int(max(trigger_indx)) + int(1)
-            counts = np.bincount(trigger_indx, minlength=len(trigger_names))
-            current_ind = 0
-            for i, c in enumerate(counts):
-                if c == 0:
-                    trigger_names.pop(i)
-                    for j in range(len(trigger_indx)):
-                        if trigger_indx[j] > current_ind:
-                            trigger_indx[j] = trigger_indx[j] - 1
-                else:
-                    current_ind += 1
-            assert all(np.diff(np.unique(trigger_indx)) == 1)
-            assert len(trigger_names) == len(np.unique(trigger_indx)) == np.max(trigger_indx) + 1
-
-        self.trigger_samples = trigger_samples
-        self.trigger_times = trigger_times
-        self.trigger_indx = trigger_indx
-        self.trigger_names = trigger_names
-
         # Unique template ids.
         self.template_ids = np.unique(self.spike_templates)
 
@@ -675,33 +637,6 @@ class TemplateModel(object):
             times = samples / self.sample_rate
             assert times.shape == (self.n_spikes,)
             return times
-
-    def _load_trigger_samples(self):
-        path = self.dir_path / "trigger_times.npy"
-        if path.exists():
-            samples = np.atleast_1d(self._read_array(path))
-            times = samples / self.sample_rate
-        else:
-            samples = np.array([])
-            times = np.array([])
-        return samples, times
-    
-    def _load_trigger_indx(self):
-        path = self.dir_path / "trigger_ind.npy"
-        if path.exists():
-            trigger_indx = np.atleast_1d(self._read_array(path))
-        else:
-            trigger_indx = None
-        return trigger_indx
-
-    def _load_trigger_names(self):
-        path = self.dir_path / "trigger_names.tsv"
-        if path.exists():
-            with open(path, "r") as file:
-                trigger_names = file.readline().strip().split("\t")
-        else:
-            trigger_names = None
-        return trigger_names
 
     def _load_spike_samples(self):
         # WARNING: "spike_times.npy" is in units of samples. Need to
@@ -1368,16 +1303,6 @@ class TemplateModel(object):
         """Returns a vector of waveform durations (ms) for all clusters"""
         waveform_duration = self._waveform_durations(self.sparse_clusters.data)
         return waveform_duration
-
-    @property
-    def triggers(self):
-        """Returns a dict with trigger id -> Dict"""
-        triggers = {}
-        for i in range(len(self.trigger_names)):
-            triggers[i] = {"name": self.trigger_names[i],
-                            "times": np.array(self.trigger_times[self.trigger_indx == i])
-            }
-        return triggers
 
     def _waveform_durations(self, tmp):
         n_templates, n_samples, n_channels = tmp.shape

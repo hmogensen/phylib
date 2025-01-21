@@ -1,8 +1,6 @@
 from pathlib import Path
 import numpy as np
-import os
 from h5py import File
-from dataclasses import dataclass
 
 def onebased_to_zerobased(x):
     if not np.all(x != 0):
@@ -25,6 +23,7 @@ class GraphModel(object):
     def _load_params(self):
         with File(self.dir_path / "phy_graph_params.jld2", "r") as f:
             self.params = {key: f[key][()] for key in f.keys()}
+        print(f"self.params = {self.params}")
 
     def _load_data(self):
         self.abs_dist_mat = self._load_npy("abs_dist_mat.npy", False)
