@@ -1,6 +1,7 @@
 from pathlib import Path
 import numpy as np
 from h5py import File
+import os
 
 class TriggerModel(object):
 
@@ -11,16 +12,21 @@ class TriggerModel(object):
         self._load_data()
 
     def _load_data(self):
-        # Todo: Check that file exists, otherwise return empty arrays
-        with File(self.dir_path / "phy_triggers_onebased.jld2", "r") as f:
-            trigger_samples = np.array(f["trigger_samples"][()]) - 1
-            trigger_indx = np.array(f["trigger_indx"][()]) - 1
-            trigger_names = np.array(f["trigger_names"][()])
-            sample_rate = f["sample_rate"][()]
-        print(f"trigger_samples = {trigger_samples}")
+        fpath = self.dir_path / "phy_triggers_onebased.jld2"
+        if fpath.exists():
+            with File(fpath, "r") as f:
+                trigger_samples = np.array(f["trigger_samples"][()]) - 1
+                trigger_indx = np.array(f["trigger_indx"][()]) - 1
+                trigger_names = np.array(f["trigger_names"][()])
+                sample_rate = f["sample_rate"][()]
+        else:
+            trigger_samples = np.array([])
+            trigger_indx = np.array([])
+            trigger_names = np.array([])
+            sample_rate = 1.
         
         assert len(trigger_samples) == len(trigger_indx)
-        assert np.max(trigger_indx) < len(trigger_names)
+        assert len(trigger_indx) == 0 or (np.max(trigger_indx) < len(trigger_names))
         self.trigger_samples = trigger_samples
         self.trigger_indx = trigger_indx
         self.trigger_names = trigger_names

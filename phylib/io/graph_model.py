@@ -26,8 +26,6 @@ class GraphModel(object):
         print(f"self.params = {self.params}")
 
     def _load_data(self):
-        self.abs_dist_mat = self._load_npy("abs_dist_mat.npy", False)
-        self.rel_dist_mat = self._load_npy("rel_dist_mat.npy", False)
         self.template_amp_channels = self._load_npy("template_amp_channels.npy", True)
         self.template_units = self._load_npy("template_units.npy", True)
         self.template_batch_nr = self._load_npy("template_batch_nr.npy", True)
