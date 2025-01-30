@@ -2,15 +2,6 @@ from pathlib import Path
 import numpy as np
 from h5py import File
 
-def onebased_to_zerobased(x):
-    if not np.all(x != 0):
-        raise ValueError("Zero values found in input. Input must be one-based indexing.")
-    return x - 1
-
-def zerobased_to_onebased(x):
-    return x + 1
-
-
 class GraphModel(object):
     
     def __init__(self, dir_path):
@@ -26,23 +17,24 @@ class GraphModel(object):
         print(f"self.params = {self.params}")
 
     def _load_data(self):
-        self.template_amp_channels = self._load_npy("template_amp_channels.npy", True)
-        self.template_units = self._load_npy("template_units.npy", True)
-        self.template_batch_nr = self._load_npy("template_batch_nr.npy", True)
-        self.template_amplitudes = self._load_npy("template_amplitudes.npy", False)
-        self.template_clusters = self._load_npy("template_clusters.npy", True)
+        # TODO: Use filenames from sc_params.const.
+        self.template_amp_channels = self._load_npy("template_amp_channels.npy")
+        self.template_units = self._load_npy("template_units.npy")
+        self.template_batch_nr = self._load_npy("template_batch_nr.npy")
+        self.template_amplitudes = self._load_npy("template_amplitudes.npy")
+        self.template_clusters = self._load_npy("template_clusters.npy")
+        self.abs_dist_sparse = self._load_npy("abs_dist_sparse.npy")
+        self.rel_dist_sparse = self._load_npy("rel_dist_sparse.npy")
+        self.row_dist_indx = self._load_npy("row_dist_indx.npy")
+        self.col_dist_indx = self._load_npy("col_dist_indx.npy")
 
-    def _load_npy(self, fname: str, convert_to_zerobased: bool):
+    def _load_npy(self, fname: str):
         fpath = self.dir_path / Path(fname)
         x = np.load(fpath)
-        if convert_to_zerobased:
-            x = zerobased_to_onebased(x)
         return x
     
-    def _save_npy(self, fname: str, x, convert_to_onebased: bool):
+    def _save_npy(self, fname: str, x,):
         fpath = self.dir_path / Path(fname)
-        if convert_to_onebased:
-            x = onebased_to_zerobased(x)
         np.save(fpath, x)
     
     
