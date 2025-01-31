@@ -412,6 +412,12 @@ class TemplateModel(object):
             self.n_samples_waveforms = 0
             self.n_channels_loc = 0
 
+        # Template clusters
+        self.template_clusters = self._load_template_clusters()
+
+        # Spike channel ranges
+        self.spike_channel_ranges = self._load_spike_channel_ranges()
+        
         # Clusters waveforms
         if not np.all(self.spike_clusters == self.spike_templates) and \
                 self.sparse_templates.cols is None:
@@ -725,6 +731,17 @@ class TemplateModel(object):
             cols = None
 
         return Bunch(data=data, cols=cols)
+
+    def _load_template_clusters(self):
+        path = self._find_path('template_clusters.npy')
+        data = self._read_array(path)
+        return Bunch(data=data)
+    
+    def _load_spike_channel_ranges(self):
+        path = self._find_path("spike_channel_ranges.npy")
+        data = self._read_array(path)
+        data = np.transpose(data)
+        return Bunch(data=data)
 
     def _load_wm(self):
         logger.debug("Loading the whitening matrix.")
