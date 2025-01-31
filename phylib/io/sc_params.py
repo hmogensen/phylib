@@ -8,7 +8,7 @@ from typing import Optional, Union
 import numpy as np
 
 from phylib.utils._types import Bunch, _as_list
-
+from phylib.io.sc_params_dialog import ScParamsDialog
 @dataclass
 class Filter:
     mvg_avg_padding: int
@@ -105,9 +105,18 @@ class ScParams(Bunch):
         for key in params_dict:
             self[key] = params_dict[key]
 
+    # TODO : Add button in UI
     def save_params(self):
         with open(self._get_fpath(), 'wb') as f:
             tomli_w.dump(_params_to_dict(self), f)
+
+    # TODO : Add button in UI
+    def open_dialog(self):
+        updated_params, accepted = ScParamsDialog.edit_params(self)
+        if accepted:
+            # Use the updated parameters
+            for key in updated_params:
+                self[key] = updated_params[key]        
 
 
 def _params_to_dict(params: ScParams) -> dict:
