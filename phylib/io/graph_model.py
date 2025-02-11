@@ -8,13 +8,7 @@ class GraphModel(object):
         self.dir_path = Path(dir_path).resolve()
         assert isinstance(self.dir_path, Path)
         assert self.dir_path.exists()
-        self._load_params()
         self._load_data()
-
-    def _load_params(self):
-        with File(self.dir_path / "phy_graph_params.jld2", "r") as f:
-            self.params = {key: f[key][()] for key in f.keys()}
-        print(f"self.params = {self.params}")
 
     def _load_data(self):
         # TODO: Use filenames from sc_params.const.
@@ -27,6 +21,7 @@ class GraphModel(object):
         self.rel_dist_sparse = self._load_npy("rel_dist_sparse.npy")
         self.row_dist_indx = self._load_npy("row_dist_indx.npy")
         self.col_dist_indx = self._load_npy("col_dist_indx.npy")
+        self.template_channel_ranges=self._load_npy("template_channel_ranges.npy")
 
     def _load_npy(self, fname: str):
         fpath = self.dir_path / Path(fname)
