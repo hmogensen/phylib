@@ -126,7 +126,7 @@ class ScParamsDialog(QDialog):
     
     def accept(self):
         try:
-            updated_params = type(self.params)(self.params.dir_path)
+            updated_params = type(self.params)(self.params.output_dir)
 
             for name, tab in self.component_tabs.items():
                 values = tab.get_values()

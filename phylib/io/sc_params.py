@@ -9,6 +9,34 @@ import numpy as np
 
 from phylib.utils._types import Bunch, _as_list
 from phylib.io.sc_params_dialog import ScParamsDialog
+
+@dataclass
+class MainParams:
+    # Frame and channel parameters
+    ch_start: int = 1
+    ch_window_width: int = 384
+    frame_window_start: int = 1
+    frame_batch_size: int = 15300
+    n_tot_frames: int = -1
+
+    # Input settings parameters
+    script_path: str = ""
+    raw_data_file: str = ""
+    phy_cluster_file: str = ""
+    n_threads: int = -1
+    mute: bool = False
+    detect_triggers: bool = False
+    output_dir: str = "output/"
+    spike_width: int = 32
+
+    @property
+    def frame_window_end(self):
+        return -1 if self.n_tot_frames == -1 else self.n_tot_frames
+
+    @property
+    def spike_padding(self):
+        return self.spike_width // 2
+
 @dataclass
 class Filter:
     mvg_avg_padding: int
@@ -57,15 +85,23 @@ class Rematch:
 class ScParams(Bunch):
     def __init__(self, dir_path, *args, **kwargs):
         super(ScParams, self).__init__(*args, **kwargs)
-        self.dir_path = Path(dir_path).resolve()
+        self.output_dir = Path(dir_path).resolve()
         self.load_params()
 
     def _get_fpath(self):
-        return self.dir_path / "sc_params.toml"
+        return self.output_dir / "sc_params.toml"
     
     def load_params(self):
         with open(self._get_fpath(), "rb") as file:
             data = tomllib.load(file)
+            
+        # Handle top-level parameters first
+        main_params = {}
+        for k, v in data.items():
+            if k not in ['filter', 'detection', 'trigger', 'tempgen', 'tempclust', 'rematch']:
+                main_params[k] = v
+        self.main = MainParams(**main_params)
+
         # Convert LinRange back to numpy array
         filter_data = data['filter']
         frange_data = filter_data['hlt_frange']
@@ -105,12 +141,10 @@ class ScParams(Bunch):
         for key in params_dict:
             self[key] = params_dict[key]
 
-    # TODO : Add button in UI
     def save_params(self):
         with open(self._get_fpath(), 'wb') as f:
             tomli_w.dump(_params_to_dict(self), f)
 
-    # TODO : Add button in UI
     def open_dialog(self):
         updated_params, accepted = ScParamsDialog.edit_params(self)
         if accepted:
@@ -120,8 +154,12 @@ class ScParams(Bunch):
 
 
 def _params_to_dict(params: ScParams) -> dict:
-    # Convert the main object to dictionary
-    params_dict = params.__dict__.copy()
+    params_dict = {}
+    
+    # Add main parameters
+    for k, v in params.main.__dict__.items():
+        if k not in ['frame_window_end', 'spike_padding']:  # Skip computed properties
+            params_dict[k] = v
     
     # Handle the filter specially due to numpy array
     filter_dict = params.filter.__dict__.copy()
