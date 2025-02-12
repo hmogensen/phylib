@@ -10,15 +10,17 @@ class ParameterWidget(QWidget):
         layout = QHBoxLayout()
         self.setLayout(layout)
         
-        # Parameter name label
         label = QLabel(param_name.replace('_', ' ').title())
+        label.setMinimumWidth(150)
+        label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         layout.addWidget(label)
         
-        # Value input field
         self.value_edit = QLineEdit(str(value))
+        self.value_edit.setMinimumWidth(100)
         layout.addWidget(self.value_edit)
+
+        layout.setContentsMargins(0, 0, 0, 0)
         
-        # Store the original type for conversion
         self.original_type = type(value)
         if isinstance(value, (np.int32, np.int64)):
             self.original_type = int
@@ -41,7 +43,6 @@ class ComponentTab(QWidget):
         layout = QVBoxLayout()
         self.setLayout(layout)
         
-        # Create parameter widgets
         self.param_widgets = {}
         for param_name, value in self.component.__dict__.items():
             if param_name != 'hlt_frange':  # Special handling for numpy array
@@ -94,10 +95,8 @@ class ScParamsDialog(QDialog):
         self.setWindowTitle("Edit ScParams")
         self.setMinimumSize(500, 400)
         
-        # Create main layout
         layout = QVBoxLayout(self)
         
-        # Create tab widget
         self.tab_widget = QTabWidget()
         layout.addWidget(self.tab_widget)
         
@@ -127,10 +126,8 @@ class ScParamsDialog(QDialog):
     
     def accept(self):
         try:
-            # Create a new params object with updated values
-            updated_params = type(self.params)()  # Create new instance
-            
-            # Update component values
+            updated_params = type(self.params)(self.params.dir_path)
+
             for name, tab in self.component_tabs.items():
                 values = tab.get_values()
                 component_class = type(getattr(self.params, name))
