@@ -30,7 +30,7 @@ class GraphModel(object):
         self._save_npy(_FNAME_TEMPLATE_CLUSTERS, template_clusters)
         # Reload to allow for optimizations (e.g. caching / sparse memory management)
         self.template_clusters = self._load_npy(_FNAME_TEMPLATE_CLUSTERS)
-        assert self.template_clusters == template_clusters
+        assert np.array_equal(self.template_clusters, template_clusters)
 
     def _load_npy(self, fname: str):
         fpath = self.dir_path / Path(fname)

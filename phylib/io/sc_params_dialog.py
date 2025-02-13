@@ -34,12 +34,14 @@ class ParameterWidget(QWidget):
         except ValueError:
             raise ValueError(f"Invalid value for {self.label.text()}")
 
+
 class ComponentTab(QWidget):
     def __init__(self, component, parent=None):
         super().__init__(parent)
         self.component = component
         self.setup_ui()
-        
+
+
     def setup_ui(self):
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -67,7 +69,8 @@ class ComponentTab(QWidget):
             layout.addWidget(length_widget)
             
         layout.addStretch()
-        
+
+
     def get_values(self):
         values = {}
         for param_name, widget in self.param_widgets.items():
@@ -85,13 +88,15 @@ class ComponentTab(QWidget):
             
         return values
 
+
 class ScParamsDialog(QDialog):
     def __init__(self, params, parent=None):
         super().__init__(parent)
         self.params = params
         self.result_params = None
         self.setup_ui()
-        
+
+       
     def setup_ui(self):
         self.setWindowTitle("Edit ScParams")
         self.setMinimumSize(500, 400)
@@ -125,11 +130,12 @@ class ScParamsDialog(QDialog):
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)
         layout.addWidget(button_box)
-    
+
+
     def accept(self):
         try:
             script_dir = os.path.dirname(self.params.main.script_path)
-            abs_output_dir = script_dir + "/" + self.params.output_dir
+            abs_output_dir = script_dir + "/" + self.params.main.output_dir
             updated_params = type(self.params)(abs_output_dir)
 
             for name, tab in self.component_tabs.items():
@@ -142,7 +148,8 @@ class ScParamsDialog(QDialog):
         except ValueError as e:
             from PyQt5.QtWidgets import QMessageBox
             QMessageBox.critical(self, "Error", str(e))
-    
+
+  
     @classmethod
     def edit_params(cls, params, parent=None):
         """
@@ -160,19 +167,3 @@ class ScParamsDialog(QDialog):
         dialog = cls(params, parent)
         result = dialog.exec_()
         return dialog.result_params, result == QDialog.Accepted
-
-# Example usage:
-"""
-def edit_parameters(params):
-    updated_params, accepted = ScParamsDialog.edit_params(params)
-    if accepted:
-        # Use the updated parameters
-        return updated_params
-    return None
-
-# Usage:
-params = ScParams(...)
-if updated_params := edit_parameters(params):
-    # Parameters were updated
-    params = updated_params
-"""
