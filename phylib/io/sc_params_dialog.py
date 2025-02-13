@@ -1,8 +1,9 @@
+import numpy as np
+import os
 from PyQt5.QtWidgets import (QDialog, QWidget, QVBoxLayout, QHBoxLayout, 
                            QTabWidget, QLabel, QLineEdit, QPushButton, 
                            QDialogButtonBox)
 from PyQt5.QtCore import Qt
-import numpy as np
 
 class ParameterWidget(QWidget):
     def __init__(self, param_name: str, value, parent=None):
@@ -102,6 +103,7 @@ class ScParamsDialog(QDialog):
         
         # Create tabs for each component
         components = {
+            'Main': self.params.main,
             'Filter': self.params.filter,
             'Detection': self.params.detection,
             'Trigger': self.params.trigger,
@@ -126,7 +128,9 @@ class ScParamsDialog(QDialog):
     
     def accept(self):
         try:
-            updated_params = type(self.params)(self.params.output_dir)
+            script_dir = os.path.dirname(self.params.main.script_path)
+            abs_output_dir = script_dir + "/" + self.params.output_dir
+            updated_params = type(self.params)(abs_output_dir)
 
             for name, tab in self.component_tabs.items():
                 values = tab.get_values()
