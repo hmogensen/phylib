@@ -702,15 +702,12 @@ class TemplateModel(object):
             path = self._find_path(
                 'templates.npy', 'templates.waveforms.npy', 'templates.waveforms.*.npy')
             data = self._read_array(path, mmap_mode='r+')
-            data = np.atleast_3d(data)
-            
+            data = np.atleast_3d(data)            
             assert data.ndim == 3
             assert data.dtype in (np.float32, np.float64)
             # WARNING: this will load the full array in memory, might cause memory problems
             empty_templates = np.all(np.all(np.isnan(data), axis=1), axis=1)
             data[empty_templates, ...] = 0
-            print(f"size data {data.shape}")
-            
             n_templates, n_samples, n_channels_loc = data.shape
         except IOError:
             return
@@ -723,15 +720,11 @@ class TemplateModel(object):
             # template_ind.npy (without an s).
             path = self._find_path('template_ind.npy', 'templates.waveformsChannels*.npy')
             cols = self._read_array(path)
-            print(f"size cols {cols.shape}")
-            
             if cols.ndim != 2:  # pragma: no cover
                 cols = np.atleast_2d(cols).T
-            print(f"size cols {cols.shape}")
             assert cols.ndim == 2
             logger.debug("Templates are sparse.")
-            print(f"templates size = {n_templates}, _, {n_channels_loc}")
-            print(f"template_ind size = {cols.shape}")
+
             assert cols.shape == (n_templates, n_channels_loc)
         except IOError:
             logger.debug("Templates are dense.")
