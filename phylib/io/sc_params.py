@@ -28,6 +28,7 @@ class MainParams:
     detect_triggers: bool = False
     output_dir: str = "output/"
     spike_width: int = 32
+    rematch_spikes: bool = False
 
     @property
     def frame_window_end(self):
@@ -53,6 +54,7 @@ class Detection:
     expected_spikes_per_second: float
     max_spike_width_samples: int
     max_channel_width: int
+    max_channel_diff: int
 
 @dataclass
 class Trigger:
@@ -68,7 +70,8 @@ class TempGen:
     dist_thr: float
     metric_thr: float
     min_channel_span: int
-
+    min_clust_size: int
+    
 @dataclass
 class TempClust:
     abs_dist_thr: float
